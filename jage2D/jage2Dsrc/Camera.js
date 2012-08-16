@@ -115,7 +115,13 @@ function JageCamera(painter) {
     
     
     /** Moves the camer's focal center without altering the current camera transform. */
-    this.moveCenter2 = function (cx, cy) {
+    this.moveCenter = function (cx, cy) {
+        if(!cy) {
+            // single argument: cx is actually a point in screen coordinates.
+            cy = cx.y
+            cx = cx.x
+        }
+        
         var dcx = cx - this.cx;
         var dcy = cy - this.cy;
         
@@ -134,11 +140,6 @@ function JageCamera(painter) {
         this.y += dc.y;
         
         this.updateTransform();
-    }
-    
-    /** Moves the camer's focal center without altering the current camera transform. */
-    this.moveCenter = function(screenPt) {
-        this.moveCenter2(screenPt.x, screenPt.y);
     }
     
     /** Used to move the camera by dragging it with the mouse or some other object with screen coordinates. */
@@ -164,8 +165,8 @@ function JageCamera(painter) {
     
     
     /** Zooms in (or out) on a point in screen coordinates. */
-    this.zoomAtScr = function (zoomMult, screenPt) {
-        this.moveCenter(screenPt);
+    this.zoomAtScr = function (zoomMult, screenPt, y) {
+        this.moveCenter(screenPt,y);
         this.zoom *= zoomMult;
         
         this.updateTransform();
