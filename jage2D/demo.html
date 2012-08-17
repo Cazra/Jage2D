@@ -2,23 +2,32 @@
 <html>
 <head><title>JIGL2D basic demo</title>
 <script src="http://code.jquery.com/jquery-1.6.1.js"></script>
+<script src="jage2Dsrc/System.js"></script>
 <script src="jage2Dsrc/JageMath.js"></script>
 <script src="jage2Dsrc/Camera.js"></script>
 <script src="jage2Dsrc/Graphics.js"></script>
+<script src="jage2Dsrc/App.js"></script>
 <script src="main.js"></script>
 <style type="text/css">
-	canvas
+	#canvas
 	{
 		position: absolute;
 		border: 1px solid black;
 		left: 10px;
 		top: 10px;
 	}
+    #canvas2
+    {
+		position: absolute;
+		border: 1px solid black;
+		left: 10px;
+		top: 480px;
+	}
 </style>
 </head>
 <body bgcolor="gray">
 <canvas id="canvas" width="640" height="480">Your browser does not support Canvas. You should upgrade.</canvas>
-<canvas id="canvasHidden" width="640" height="480" hidden="true"></canvas>
+<canvas id="canvas2" width="640" height="480">Your browser does not support Canvas. You should upgrade.</canvas>
 <noscript>Turn your javascript back on!</noscript>
 </body>
 </html>
