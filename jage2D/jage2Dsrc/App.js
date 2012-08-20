@@ -126,18 +126,12 @@ function JageApp(canvas, id, frameRate) {
     
     /** Performs a step through the app's logic. The default implementation does nothing. */
     this.logic = function() { 
-        if(!this.dx)
-            this.dx = Math.random()*5 + 0.1;
-        x += this.dx; 
+        // does nothing
     } 
     
-    /** Renders the app to its Canvas. The default implementation paints the Canvas completely white and displays the frame rate. */
+    /** Renders the app to its Canvas. The default implementation paints the entire Canvas white. */
     this.render = function(pen) {
         pen.clear("white");
-        pen.setFill("black");
-        pen.pen.font = "16px sans-serif";
-        pen.drawString(this.timer.frameRate, x % 640,30, null, pen.ONLYFILL);
-        pen.drawString(this.timer.preferredFrameRate, 20, 50, null, pen.ONLYFILL);
     }
 }
 

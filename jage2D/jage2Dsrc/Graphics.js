@@ -23,6 +23,9 @@ function JagePen(pen) {
     /** A reference to the CanvasRenderingContext2D wrapped by this. */
     this.pen = pen;
     
+    /** A reference to the current Affine Transform used by this. */
+    this.trans = JageAffTrans.id();
+    
     /** A constant used by some methods to tell the pen to only stroke a shape and not fill it. */
     this.ONLYSTROKE = 0x00000001;
     
@@ -187,14 +190,22 @@ function JagePen(pen) {
         }
     }
     
+    /** Returns a copy of the current transform matrix. It is highly recommended that you use JagePen's getTransform and setTransform methods instead of directly manipulating canvas's context's transform directly. Canvas currently has no method to obtain its context's current transform, so Jage has to keep track of it itself using its transform. */
+    this.getTransform = function() {
+        return this.trans.clone();
+    }
+    
     /** Sets the pen's current transform matrix using a JageAffTrans. */
     this.setTransform = function (at) {
+        this.trans = at.clone();
         this.pen.setTransform(at.m00, at.m10, at.m01, at.m11, at.m02, at.m12);
     }
     
     /** Transforms the pen's current transform matrix using a JageAffTrans. */
     this.transform = function (at) {
-        this.pen.transform(at.m00, at.m10, at.m01, at.m11, at.m02, at.m12);
+        this.trans.cat(at);
+        at = this.trans;
+        this.pen.setTransform(at.m00, at.m10, at.m01, at.m11, at.m02, at.m12);
     }
     
     /** Resets the pen's transform, clipping area, fillStyle, and strokeStyle. */
