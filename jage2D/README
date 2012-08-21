@@ -29,6 +29,14 @@ README
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ======================================================================*/
 
+Jage2D is a Javascript + Canvas based 2D game engine. It is designed to not have to 
+rely on any external scripts such jQuery and to be cross-browser compatible. This game  
+engine also supports multiple Jage2D applications running in the same web page! 
+
+I'll eventually get around to expanding this README and creating some example applications. 
+Hang in there until then!
+
+
 Requirements:
 ----------------
 Your web browser must support the following features to use the JAGE 2D library:
