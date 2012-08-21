@@ -25,7 +25,11 @@ function TestApp(canvas,id) {
         pen.setFill("black");
         pen.pen.font = "16px sans-serif";
         self.fpsSprite.render(pen);
-        pen.drawString("Preferred frame rate: " + self.timer.preferredFrameRate, 20, 50, null, pen.ONLYFILL);
+        
+        // instructional text
+        pen.drawString("Click in the Canvas to give it keyboard focus. Then use",20,30);
+        pen.drawString("the arrow keys to move the frame rate around!", 20, 50);
+        pen.drawString("You can also drag it around with the mouse.", 20, 70);
         
         // draw the mouse pointer
         if(self.mouse.isLeftPressed) pen.setFill("red");
@@ -58,15 +62,31 @@ function TestSprite(x,y,app) {
     self.scale(5.0,3.0);
     self.opacity = 0.5;
     
+    self.isGrabbed = false;
+    
     self.move = function() {
         
+        // move with keyboard arrows
         if(app.keyboard.isPressed[37]) self.x -= self.dx;
         if(app.keyboard.isPressed[39]) self.x += self.dx;
         if(app.keyboard.isPressed[38]) self.y -= self.dx;
         if(app.keyboard.isPressed[40]) self.y += self.dx;
         
+        // while no key is pressed, the sprite will slowly descend.
         if(!app.keyboard.isAnyPressed) self.y += 1;
         
+        // mouse drag and drop
+        if(app.mouse.justLeftPressed && JageMath.dist(self.x, self.y, app.mouse.x, app.mouse.y) < 50) {
+            self.isGrabbed = true;
+        }
+        if(!app.mouse.isLeftPressed)
+            self.isGrabbed = false
+        if(self.isGrabbed) {
+            self.x = app.mouse.x;
+            self.y = app.mouse.y;
+        }
+        
+        // screen wrapping
         self.x = (self.x + 640) % 640;
         self.y = (self.y + 480) % 480;
         
@@ -86,13 +106,10 @@ function TestSprite(x,y,app) {
 $(document).ready(function () {
 	// obtain our graphics context from the canvas object.
 	var c1 = document.getElementById("app1");
-    var c2 = document.getElementById("app2");
     
     var myApp = new TestApp(c1,c1.id);
     myApp.start();   
-    
-    var myApp2 = new TestApp(c2,c2.id);
-    myApp2.start();
+
 
 });
 

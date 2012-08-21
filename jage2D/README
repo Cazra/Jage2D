@@ -36,6 +36,8 @@ engine also supports multiple Jage2D applications running in the same web page!
 I'll eventually get around to expanding this README and creating some example applications. 
 Hang in there until then!
 
+All components and examples of Jage2D, unless otherwise specified, have been tested in 
+Google Chrome and Internet Explorer 9.
 
 Requirements:
 ----------------

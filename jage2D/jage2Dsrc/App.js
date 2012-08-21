@@ -8,6 +8,16 @@
  * See README file for license.
 ======================================================================*/
 
+/** 
+ * App.js 
+ * Provides the core classes for creating a Jage2D application. 
+ * Depends on: 
+ *      Graphics.js
+ *      Input.js
+ *      Jage.js
+ */
+
+
 
 /* *
  * JageTimer
@@ -82,6 +92,9 @@ function JageApp(canvas, id, frameRate) {
     
     // The JageMouse for handling mouse input in the app's Canvas.
     this.mouse = new JageMouse(canvas);
+    
+    // The JageKeyboard for handling keyboard input in the app's Canvas.
+    this.keyboard = new JageKeyboard(canvas);
     
     // A flag for saying that our app is loading something.
     this.isLoading = false;

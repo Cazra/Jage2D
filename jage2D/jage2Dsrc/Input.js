@@ -8,8 +8,11 @@
  * See README file for license.
 ======================================================================*/
 
-/** Input.js - Provides classes for polling for user input. 
-Depends on: none.*/
+/** 
+ * Input.js
+ * Provides classes for polling for user input that has occurred between timer events. 
+ * Depends on: none.
+ */
 
 
 /**
@@ -21,6 +24,8 @@ function JageMouse(canvas) {
 
     /** The mouse's current position relative to the Canvas's topleft corner. */
     this.position = new JagePoint(0,0);
+    this.x = 0;
+    this.y = 0;
     
     /** "Any" mouse presses */
     this.isAnyPressed = false;
@@ -71,6 +76,10 @@ function JageMouse(canvas) {
         if(this.paslf) {
             this.justAnyPressed = true;
             this.isAnyPressed = true;
+            
+            // If we click in this app's canvas, this app becomes our window's active Jage application 
+            // and can receive keyboard events.
+            window.activeJageApp = canvas.boundJageApp;
         }
         
         if(this.raslf) {
@@ -150,8 +159,8 @@ function JageMouse(canvas) {
         
         myApp.mouse.position.x = evt.pageX - this.offsetLeft;
         myApp.mouse.position.y = evt.pageY - this.offsetTop;
-        
-        Jage.log("Mouse moved to " + myApp.mouse.position.toString());
+        myApp.mouse.x = myApp.mouse.position.x;
+        myApp.mouse.y = myApp.mouse.position.y;
     }
     
     /** Mouse button press handler. */
@@ -242,5 +251,106 @@ function JageMouse(canvas) {
         canvas.attachEvent('onmousewheel', this.myOnmousewheel);
     }
 }
+
+
+
+/**
+ * JageKeyboard
+ * Polls for keyboard input in a Canvas element.
+ **/
+function JageKeyboard(canvas) {
+    // DATA
+    
+    /** Flags for checking the state of the fabled "any" key. */
+    this.isAnyPressed = false
+    this.justAnyPressed = false;
+    this.justAnyTyped = false;
+    
+    this.paslf = false;
+    this.raslf = false;
+    
+    /** Key code -> flag maps for checking the state of each individual key. */
+    this.isPressed = [];
+    this.justPressed = [];
+    this.justTyped = [];
+    
+    /** List of keycodes pressed or released since last frame */
+    this.pslf = [];
+    this.rslf = [];
+    
+    this.lastKeyPressed = null;
+    
+    // METHODS
+    
+    this.poll = function() {
+        // The fabled "any" key.
+        this.justAnyPressed = false;
+        this.justAnyType = false;
+        
+        
+        if(this.paslf) {
+            if(!this.isAnyPressed) this.justAnyPressed = true;
+        }
+        
+        if(this.raslf) {
+            this.justAnyTyped = true;
+        }
+        
+        this.paslf = false;
+        this.raslf = false;
+        
+        // Process specific keys
+        this.justPressed = [];
+        this.justTyped = [];
+        
+        for(keycode in this.pslf) {
+            if(!this.isPressed[keycode]) this.justPressed[keycode] = true;
+            this.isPressed[keycode] = true;
+            
+            this.lastKeyPressed = keycode;
+        }
+        
+        for(keycode in this.rslf) {
+            this.justTyped[keycode] = true;
+            this.isPressed[keycode] = false;
+        }
+        
+        // check for isAnyPressed.
+        this.isAnyPressed = false;
+        for(keyFlag in this.isPressed) {
+            if(this.isPressed[keyFlag] == true) this.isAnyPressed = true;
+        }
+        if(!this.isAnyPressed) this.isPressed = [];
+        
+        // clean up for next polling.
+        this.pslf = [];
+        this.rslf = [];
+    }
+    
+    // initialization
+    
+    window.onkeydown = function(evt) {
+        if(!evt) evt = window.event;
+        var myApp = this.activeJageApp;
+        if(!myApp) return;
+        
+        myApp.keyboard.paslf = true;
+        var mykeyCode = evt.keyCode;
+        myApp.keyboard.pslf[mykeyCode] = mykeyCode;
+        
+        
+    }
+    
+    window.onkeyup = function(evt) {
+        if(!evt) evt = window.event;
+        var myApp = this.activeJageApp;
+        if(!myApp) return;
+        
+        myApp.keyboard.raslf = true;
+        var mykeyCode = evt.keyCode;
+        myApp.keyboard.rslf[mykeyCode] = mykeyCode;
+    }
+}
+
 
 

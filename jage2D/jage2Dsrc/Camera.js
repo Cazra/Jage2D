@@ -8,6 +8,13 @@
  * See README file for license.
 ======================================================================*/
 
+/**
+ * Camera.js
+ * Provides a camera class that produces an affine transform for panning/zooming/rotating
+ * the contents of a Canvas.
+ */
+
+
 /* *
  * JageCamera
  * Used to create a 2D camera affine transform and provide functions for 
@@ -105,13 +112,15 @@ function JageCamera(painter) {
         return this.inv.apply(pt);
     }
     
-    this.s2w = this.screenToWorld
+    this.s2w = this.screenToWorld;
     
     /** Returns a point transformed from world to screen coordinates.
     The original point is unchanged. */
     this.worldToScreen = function (pt) {
         return this.trans.apply(pt);
     }
+    
+    this.w2s = this.worldToScreen;
     
     
     /** Moves the camer's focal center without altering the current camera transform. */
@@ -152,7 +161,7 @@ function JageCamera(painter) {
         }
         else {
             // On subsequent drag iterations, update the camera focal point's screen and world coordinates relative to the anchor point.
-            var worldPt = this.dragInv.apply(screenPt);
+            var worldPt = s2w(screenPt);
             var vector = new JagePoint(this.dragAnchor.x - worldPt.x, this.dragAnchor.y - worldPt.y);
             
             this.x = dragStartPt.x + vector.x;

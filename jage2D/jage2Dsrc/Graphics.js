@@ -8,6 +8,13 @@
  * See README file for license.
 ======================================================================*/
 
+/** 
+ * Graphics.js
+ * Provides classes for easily doing neat graphical stuff with Canvas. 
+ * Depends on:
+ *      JageMath.js
+ */
+
 /* *
  * JagePen 
  * A wrapper for CanvasRenderingContext2D, providing functions that make

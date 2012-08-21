@@ -8,6 +8,13 @@
  * See README file for license.
 ======================================================================*/
 
+/**
+ * JageMath.js
+ * Provides some static and nonstatic classes useful for doing geometric computations.
+ * Depends on: none
+ */
+
+
 /* *
  * JageMath
  * Provides some commonly used mathematical functions 
