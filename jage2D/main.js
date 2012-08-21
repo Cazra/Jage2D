@@ -8,13 +8,15 @@ var testImg = new Image();
 testImg.src = 'http://fc06.deviantart.net/fs70/f/2012/228/d/9/vacation_to_earth_by_cazra-d5bdt6n.png'; // Have some artwork of mine to test out image rendering with!
 
 
-
-function testApp(pen,id) {
-    var self = new JageApp(pen,id);
+/** A very simple Jage2D application that displays the frame rate as a moving sprite. */
+function TestApp(canvas,id) {
+    var self = new JageApp(canvas,id);
     
+    self.mouse = new JageMouse(canvas);
     self.fpsSprite = new TestSprite(0,30, self);
     
     self.logic = function() { 
+        self.mouse.poll();
         self.fpsSprite.move();
     };
     
@@ -24,11 +26,27 @@ function testApp(pen,id) {
         pen.pen.font = "16px sans-serif";
         self.fpsSprite.render(pen);
         pen.drawString("Preferred frame rate: " + self.timer.preferredFrameRate, 20, 50, null, pen.ONLYFILL);
+        pen.drawString(document.getElementById(self.id).offsetTop, 20, 70, null, pen.ONLYFILL);
+        
+        // draw the mouse pointer
+        if(self.mouse.isLeftPressed) pen.setFill("red");
+        if(self.mouse.isRightPressed) pen.setFill("green");
+        if(self.mouse.isMiddlePressed) pen.setFill("blue");
+        
+        var mouseX = self.mouse.position.x;
+        var mouseY = self.mouse.position.y;
+        
+        pen.drawCircle(mouseX, mouseY, 10);
+        
+        
+        if(self.mouse.wheel < 0) pen.drawLine(mouseX, mouseY, mouseX, mouseY-30);
+        if(self.mouse.wheel > 0) pen.drawLine(mouseX, mouseY, mouseX, mouseY+30);
     }
     
     return self;
 }
 
+/** A test sprite for that displays an application's frame rate. */
 function TestSprite(x,y,app) {
     var self = new JageSprite(x,y);
     
@@ -65,13 +83,13 @@ function TestSprite(x,y,app) {
 
 $(document).ready(function () {
 	// obtain our graphics context from the canvas object.
-	var c = document.getElementById("canvas");
-    var c2 = document.getElementById("canvas2");
+	var c1 = document.getElementById("app1");
+    var c2 = document.getElementById("app2");
     
-    var myApp = new testApp(c,"app1");
+    var myApp = new TestApp(c1,c1.id);
     myApp.start();   
     
-    var myApp2 = new testApp(c2,"app2");
+    var myApp2 = new TestApp(c2,c2.id);
     myApp2.start();
 
 });

@@ -8,6 +8,9 @@
  * See README file for license.
 ======================================================================*/
 
+/** Jage.js - the top-level script for the Jage2D library. */
+
+
 /** An object representing the Jage system for this context. It provides some static methods and data structures used for handling the applications in this context. */
 function Jage () {
 }

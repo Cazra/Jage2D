@@ -73,8 +73,15 @@ function JageApp(canvas, id, frameRate) {
     // A string to uniquely identify this app instance. 
     this.id = id;
     
-    // The JagePen for drawing on the app's Canvas.
+    // Keep a reference to this app's Canvas.
+    this.canvas = canvas;
+    canvas.boundJageApp = this;
+    
+    // The JagePen for drawing on the app's Canvas. For most things, you should use this instead of directly using the canvas's context.
     this.pen = new JagePen(canvas.getContext("2d"));
+    
+    // The JageMouse for handling mouse input in the app's Canvas.
+    this.mouse = new JageMouse(canvas);
     
     // A flag for saying that our app is loading something.
     this.isLoading = false;
