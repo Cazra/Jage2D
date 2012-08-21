@@ -23,19 +23,20 @@
  * The camera will start with no tilt nor zoom with its focus in the center of the 
  * parent canvas at world coordinates 0,0.
  *
- * Inputs: painter is a CanvasRenderingContext2D.
+ * Inputs: canvas is a Canvas element.
  * Depends on: JageMath.js
  * */
 
-function JageCamera(painter) {
+function JageCamera(canvas) {
     // DATA
     
     /** A reference to the Canvas's rendering context. */
-    this.painter = painter;
-
+    this.painter = canvas.getContext("2d");
+    this.canvas = canvas;
+    
     /** The width and height of the parent Canvas. */
-    this.width = painter.canvas.width;
-    this.height = painter.canvas.height;
+    this.width = this.painter.canvas.width;
+    this.height = this.painter.canvas.height;
 
     /** The x,y position of the camera's focal center in world coordinates */
     this.x = 0.0;
@@ -66,8 +67,8 @@ function JageCamera(painter) {
     
     /** Resets the camera's to its default state. */
 	this.reset = function () {
-        this.width = painter.canvas.width;
-        this.height = painter.canvas.height;
+        this.width = this.painter.canvas.width;
+        this.height = this.painter.canvas.height;
         this.x = 0.0;
         this.y = 0.0;
         this.cx = this.width/2.0;
@@ -153,23 +154,34 @@ function JageCamera(painter) {
     
     /** Used to move the camera by dragging it with the mouse or some other object with screen coordinates. */
     this.drag = function(screenPt) {
-        if(this.dragTimer == 0) {
-            // On our first drag iteration, obtain the anchor point for the drag, the focus's starting world coords, and our starting inverse.
-            this.dragAnchor = s2w(screenPt);
-            this.dragStartPt = new JagePoint(this.x, this.y);
-            this.dragInv = this.inv.clone();
-        }
-        else {
-            // On subsequent drag iterations, update the camera focal point's screen and world coordinates relative to the anchor point.
-            var worldPt = s2w(screenPt);
-            var vector = new JagePoint(this.dragAnchor.x - worldPt.x, this.dragAnchor.y - worldPt.y);
-            
-            this.x = dragStartPt.x + vector.x;
-            this.y = dragStartPt.y + vector.y;
-            
-            this.moveCenter(screenPt);
-        }
+        if(!this.dragTimer) this.dragTimer = 0;
+        if(this.dragTimer == 0) this.updateDrag(screenPt);
+        
+        // Update the camera focal point's screen and world coordinates relative to the anchor point.
+        var worldPt = this.s2w(screenPt);
+        var vector = new JagePoint(this.dragAnchor.x - worldPt.x, this.dragAnchor.y - worldPt.y);
+        
+        this.x = this.dragStartPt.x + vector.x;
+        this.y = this.dragStartPt.y + vector.y;
+        
+        this.moveCenter(screenPt);
+        
+        this.updateDrag(screenPt);
         this.dragTimer++;
+    }
+    
+    /** Helper method: Updates the camera drag anchor state. */
+    this.updateDrag = function(screenPt) {
+        // Obtain the anchor point for the drag, the focus's starting world coords, and our starting inverse.
+        this.dragAnchor = this.s2w(screenPt);
+        this.dragStartPt = new JagePoint(this.x, this.y);
+        this.dragInv = this.inv.clone();
+    }
+    
+    /** Used to end the camera drag. You'll get some weird results next time you try to drag the camera if you don't call this when
+        you're done dragging! */
+    this.endDrag = function() {
+        this.dragTimer = 0;
     }
     
     

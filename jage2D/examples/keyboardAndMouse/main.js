@@ -24,6 +24,8 @@ function TestApp(canvas,id) {
         pen.clear("white");
         pen.setFill("black");
         pen.pen.font = "16px sans-serif";
+        
+        // draw the frame rate sprite
         self.fpsSprite.render(pen);
         
         // instructional text
@@ -36,11 +38,10 @@ function TestApp(canvas,id) {
         if(self.mouse.isRightPressed) pen.setFill("green");
         if(self.mouse.isMiddlePressed) pen.setFill("blue");
         
-        var mouseX = self.mouse.position.x;
-        var mouseY = self.mouse.position.y;
+        var mouseX = self.mouse.x;
+        var mouseY = self.mouse.y;
         
         pen.drawCircle(mouseX, mouseY, 10);
-        
         
         if(self.mouse.wheel < 0) pen.drawLine(mouseX, mouseY, mouseX, mouseY-30);
         if(self.mouse.wheel > 0) pen.drawLine(mouseX, mouseY, mouseX, mouseY+30);
@@ -67,10 +68,10 @@ function TestSprite(x,y,app) {
     self.move = function() {
         
         // move with keyboard arrows
-        if(app.keyboard.isPressed[37]) self.x -= self.dx;
-        if(app.keyboard.isPressed[39]) self.x += self.dx;
-        if(app.keyboard.isPressed[38]) self.y -= self.dx;
-        if(app.keyboard.isPressed[40]) self.y += self.dx;
+        if(app.keyboard.isPressed[Keys.Left]) self.x -= self.dx;
+        if(app.keyboard.isPressed[Keys.Right]) self.x += self.dx;
+        if(app.keyboard.isPressed[Keys.Up]) self.y -= self.dx;
+        if(app.keyboard.isPressed[Keys.Down]) self.y += self.dx;
         
         // while no key is pressed, the sprite will slowly descend.
         if(!app.keyboard.isAnyPressed) self.y += 1;
@@ -95,6 +96,8 @@ function TestSprite(x,y,app) {
     
     self.draw = function(pen) {
         pen.drawString(self.app.timer.frameRate, 0, 0, null, pen.ONLYFILL);
+        
+        // draw a circle at the sprite's focal point. 
         pen.drawCircle(self.focalX,self.focalY,2);
     }
     
