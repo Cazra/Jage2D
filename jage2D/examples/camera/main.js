@@ -38,6 +38,10 @@ function TestApp(canvas,id) {
         // rotate the camera around the last point you clicked by pressing Q
         if(self.keyboard.isPressed[Keys.Q]) {
             self.camera.angle += 5;
+            
+            // update the camera's transform (in this example, the code for rotation is all that would be updated by this since
+            // drag and zoomAtScr update the transform automatically.
+            self.camera.updateTransform();
         }
         
         // reset the camera by pressing R
@@ -45,8 +49,8 @@ function TestApp(canvas,id) {
             self.camera.reset();
         }
         
-        // update the camera's transform.
-        self.camera.updateTransform();
+        
+        
     };
     
     self.render = function(pen) {

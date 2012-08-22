@@ -50,7 +50,7 @@ function JageCamera(canvas) {
     It is zoomed in closer to +Infinity and zoomed out closer to 0. */
     this.zoom = 1.0;
 
-    /** The camera's tilt angle in degrees. */
+    /** The camera's tilt angle in degrees - that is, the angle of the y axis from 90 degrees going counter-clockwise.*/
     this.angle = 0.0;
 
     /** The position of the parent Canvas's edges in world coordinates. (These values are only accurate when this.angle is 0) */
@@ -123,6 +123,13 @@ function JageCamera(canvas) {
     
     this.w2s = this.worldToScreen;
     
+    /** Sets the world coordinates of the camera's focal center. */
+    this.moveTo = function(x, y) {
+        this.x = x;
+        this.y = y;
+        
+        this.updateTransform();
+    }
     
     /** Moves the camer's focal center without altering the current camera transform. */
     this.moveCenter = function (cx, cy) {
@@ -184,6 +191,19 @@ function JageCamera(canvas) {
         this.dragTimer = 0;
     }
     
+    /** Sets the camera's current zoom. */
+    this.setZoom = function (zoom) {
+        this.zoom = zoom;
+        
+        this.updateTransform();
+    }
+    
+    /** Sets the camera's current angle. */
+    this.setAngle = function (angle) {
+        this.angle = angle;
+        
+        this.updateTransform();
+    }
     
     /** Zooms in (or out) on a point in screen coordinates. */
     this.zoomAtScr = function (zoomMult, screenPt, y) {
