@@ -16,7 +16,12 @@ function TestApp(canvas,id) {
     self.testImg = new Image();
     self.testImg.src = 'http://fc06.deviantart.net/fs70/f/2012/228/d/9/vacation_to_earth_by_cazra-d5bdt6n.png';
     
+    self.imageLoader.addImage(self.testImg);
+    
     self.logic = function() { 
+        // do nothing if our test image is still loading.
+        if(self.imageLoader.isLoading) return;
+        
         self.mouse.poll();
         self.keyboard.poll();
         
@@ -58,22 +63,28 @@ function TestApp(canvas,id) {
         pen.setFill("black");
         pen.pen.font = "12px sans-serif";
         
-        // Use the camera's transform, but save our original transform first.
-        var origTrans = pen.getTransform();
-        pen.setTransform(self.camera.trans);
-        
-        // draw our test image.
-        pen.drawImage(self.testImg,0,0);
-        
-        // restore our original transform.
-        pen.setTransform(origTrans);
-        
-        // instructional text
-        pen.drawString("Drag with mouse to pan the camera. ",20,20);
-        pen.drawString("Use mouse wheel to zoom in and out.", 20, 40);
-        pen.drawString("Hold Q to rotate the camera.", 20, 60);
-        pen.drawString("Press R to reset the camera.", 20, 80);
-        pen.drawString(self.timer.frameRate, 480,20);
+        if(self.imageLoader.isLoading) {
+            pen.pen.font = "28px sans-serif";
+            pen.drawString("Loading test image... ",300,340);
+        }
+        else {
+            // Use the camera's transform, but save our original transform first.
+            var origTrans = pen.getTransform();
+            pen.setTransform(self.camera.trans);
+            
+            // draw our test image.
+            pen.drawImage(self.testImg,0,0);
+            
+            // restore our original transform.
+            pen.setTransform(origTrans);
+            
+            // instructional text
+            pen.drawString("Drag with mouse to pan the camera. ",20,20);
+            pen.drawString("Use mouse wheel to zoom in and out.", 20, 40);
+            pen.drawString("Hold Q to rotate the camera.", 20, 60);
+            pen.drawString("Press R to reset the camera.", 20, 80);
+            pen.drawString(self.timer.frameRate, 480,20);
+        }
     }
     
     return self;

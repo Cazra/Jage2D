@@ -21,7 +21,6 @@
  * it a little easier to use and transparently portable.
  * Many of its methods are similar to those of java.awt.Graphics2D in Java.
  * Inputs: pen is a CanvasRenderingContext2D.
- * Depends on: JageMath.js
  * */
  
 function JagePen(pen) {
@@ -237,9 +236,47 @@ function JagePen(pen) {
 }
 
 
+/** Static method that returns a cropped portion of an image. */
+//JagePen.cropImage = function // TODO
 
 
-
-
+/** 
+ * JageImageLoader
+ * A datastructure that maintains a list of Image elements waiting to be loaded.
+ * The JageApp class comes with one of these bound to its imageLoader property.
+ */
+function JageImageLoader() {
+    // our list of images waiting to finish loading.
+    this.images = [];
+    
+    // a flag that is true iff images is empty - that is, there are no more images waiting to load.
+    this.isLoading = false;
+    
+    /** Adds an image to our list of images waiting to finish loading. */
+    this.addImage = function (image) {
+        this.images.push(image);
+        this.isLoading = true;
+    }
+    
+    /** Updates the list of images by removing the ones that have finished loading. 
+    Returns a flag that is true iff images is not empty. */
+    this.update = function() {
+        var newList = [];
+        
+        for(key in this.images) {
+            var img = this.images[key];
+            if(!img.complete) {
+                newList.push(img);
+            }
+        }
+        
+        this.images = newList;
+        
+        // set isLoading to true iff the updated list is not empty. Else false.
+        this.isLoading = (newList.length > 0);
+    }
+    
+    
+}
  
  

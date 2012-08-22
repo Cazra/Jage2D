@@ -96,6 +96,9 @@ function JageApp(canvas, id, frameRate) {
     // The JageKeyboard for handling keyboard input in the app's Canvas.
     this.keyboard = new JageKeyboard(canvas);
     
+    // The application's image loader. 
+    this.imageLoader = new JageImageLoader();
+    
     // A flag for saying that our app is loading something.
     this.isLoading = false;
     
@@ -125,6 +128,9 @@ function JageApp(canvas, id, frameRate) {
         // if this app isn't running, skip this step().
         if(!this.isRunning)
             return;
+        
+        // update our imageLoader.
+        this.imageLoader.update();
         
         // run n iterations through our logic (just 1 by default), then render our app.
         for(var i = 0; i < this.stepsPerFrame; i++) {
