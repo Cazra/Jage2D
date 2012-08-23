@@ -15,6 +15,52 @@
  *      JageMath.js
  */
 
+ /** 
+ * JageImageLoader
+ * A datastructure that maintains a list of Image elements waiting to be loaded.
+ * The JageApp class comes with one of these bound to its imageLoader property.
+ */
+function JageImageLoader() {
+    // our list of images waiting to finish loading.
+    this.images = [];
+    
+    // a flag that is true iff images is empty - that is, there are no more images waiting to load.
+    this.isLoading = false;
+    
+    /** Adds an image to our list of images waiting to finish loading. */
+    this.addImage = function (image) {
+        this.images.push(image);
+        this.isLoading = true;
+    }
+    
+    /** Updates the list of images by removing the ones that have finished loading. 
+    Returns a flag that is true iff images is not empty. */
+    this.update = function() {
+        var newList = [];
+        
+        for(key in this.images) {
+            var img = this.images[key];
+            if(!img.complete) {
+                newList.push(img);
+            }
+            else {
+                // we'll hack a flag onto our image to tell the user that it just finished
+                // loading, in case they want to apply any filters to the image before 
+                // actually using it. Just remember to set this to false when you're done with it.
+                img.justFinishedLoading = true;
+            }
+        }
+        
+        this.images = newList;
+        
+        // set isLoading to true iff the updated list is not empty. Else false.
+        this.isLoading = (newList.length > 0);
+    }
+    
+    
+}
+ 
+ 
 /* *
  * JagePen 
  * A wrapper for CanvasRenderingContext2D, providing functions that make
@@ -236,47 +282,200 @@ function JagePen(pen) {
 }
 
 
-/** Static method that returns a cropped portion of an image. */
-//JagePen.cropImage = function // TODO
+/** Static helper method that produces a new empty Canvas 
+ that can be used as an image.*/
+JagePen.createImage = function (w,h) {
+    var result = document.createElement("canvas");
+    result.width = w;
+    result.height = h;
+    return result;
+}
+
+
+JagePen.convertImg2Canvas = function(image) {
+    var result = JagePen.createImage(image.width,image.height);
+    var context = result.getContext("2d");
+    context.drawImage(image, 0,0);
+    
+    return result;
+}
 
 
 /** 
- * JageImageLoader
- * A datastructure that maintains a list of Image elements waiting to be loaded.
- * The JageApp class comes with one of these bound to its imageLoader property.
+ * Static method that returns a cropped portion of an image. 
+ * Input: 
+ *      image - our source image
+ *      x - the left border of our cropping area.
+ *      y - the top border of our cropping area.
+ *      w - the width of our cropping area.
+ *      h - the height of our cropping area.
  */
-function JageImageLoader() {
-    // our list of images waiting to finish loading.
-    this.images = [];
+JagePen.cropImage = function (image, x, y, w, h) {
+    var result = JagePen.createImage(w,h);
+    var context = result.getContext("2d");
+    context.drawImage(image, x, y, w, h, 0,0,w,h);
     
-    // a flag that is true iff images is empty - that is, there are no more images waiting to load.
-    this.isLoading = false;
-    
-    /** Adds an image to our list of images waiting to finish loading. */
-    this.addImage = function (image) {
-        this.images.push(image);
-        this.isLoading = true;
-    }
-    
-    /** Updates the list of images by removing the ones that have finished loading. 
-    Returns a flag that is true iff images is not empty. */
-    this.update = function() {
-        var newList = [];
-        
-        for(key in this.images) {
-            var img = this.images[key];
-            if(!img.complete) {
-                newList.push(img);
-            }
-        }
-        
-        this.images = newList;
-        
-        // set isLoading to true iff the updated list is not empty. Else false.
-        this.isLoading = (newList.length > 0);
-    }
-    
-    
+    return result;
 }
+
+
+/** 
+ * Static method that returns the array of RGBA pixels for an image or canvas. 
+ * This array will also has width and height properties that store the source image's 
+ * width, height, and a reference to the ImageData object the pixel array is bound to.
+ */
+JagePen.getPixels = function(image) {
+    // if our image is not a Canvas, turn it into a Canvas.
+    if(image instanceof Image) {
+        image = JagePen.convertImg2Canvas(image);
+    }
+    
+    var imgData = null;
+    var pixels = null;
+    try {
+        imgData = image.getContext("2d").getImageData(0,0,image.width, image.height);
+        pixels = imgData.data;
+    }
+    catch (err) {
+        // Most browsers make it so that Canvas can't manipulate pixels in images from other foreign origins. 
+        // I think that's pretty lame, but they say it's for security reasons...
+        // If this happens, produce a new error image to work with with the same dimensions as the source image.
+        image = JagePen.createImage(image.width, image.height);
+        var context = image.getContext("2d");
+        context.fillStyle = "black";
+        context.strokeStyle = "red";
+        context.fillRect(0,0,image.width, image.height);
+        context.strokeRect(0,0,image.width, image.height);
+        var errStr = "Could not get pixels of cross-origin image";
+        context.fillText(errStr,20,20);
+        context.strokeText(errStr,20,20);
+        context.fillStyle = "blue";
+        context.fillRect(image.width*0.3,image.height*0.3,image.width*0.5, image.height*0.5);
+        
+        imgData = image.getContext("2d").getImageData(0,0,image.width, image.height);
+        pixels = imgData.data;
+    }
+    
+    // hack on some other information to our pixel array object.
+    pixels.width = image.width;
+    pixels.height = image.height;
+    pixels.imgData = imgData;
+    
+    return pixels;
+}
+
+
+
+/** A library of image filtering effects. */
+function JageImgEffects() {
+}
+
+/**
+ * Static method that returns a copy of an image with all pixels of one color made 
+ * transparent.
+ */
+JageImgEffects.transparentColor = function (img, r, g, b)  {
+    var pixels = JagePen.getPixels(img);
+    var result = JagePen.createImage(img.width, img.height);
+    var context = result.getContext("2d");
+    
+    for(var i = 0; i< pixels.length; i += 4) {
+        var sr = pixels[i];
+        var sg = pixels[i+1];
+        var sb = pixels[i+2];
+        
+        // if this pixel's colors match our transparent color, set its alpha value to 0.
+        if(r == sr && g == sg && b == sb) {
+            pixels[i+3] = 0.0;
+        }
+    }
+    
+    // put our pixels into the resulting image.
+    context.putImageData(pixels.imgData,0,0);
+    return result;
+}
+
+
+/**
+ * Static method that returns a copy of an image with an alpha map applied for transparency.
+ * The red value of the alpha map's pixels is used to determine that pixel's transparency with
+ * 255 being opaque and 0 being transparent. It is assumed that img and alphaImg are the same 
+ * size.
+ */
+JageImgEffects.alphaMap = function (img, alphaImg)  {
+    var pixels = JagePen.getPixels(img);
+    var result = JagePen.createImage(img.width, img.height);
+    var context = result.getContext("2d");
+    
+    var alphaPixels = JagePen.getPixels(alphaImg);
+    
+    for(var i = 0; i< pixels.length; i += 4) {
+        pixels[i+3] = alphaPixels[i];
+    }
+    
+    // put our pixels into the resulting image.
+    context.putImageData(pixels.imgData,0,0);
+    return result;
+}
+
+
+/**
+ * Static method that returns a copy of an image with the rgb values of its pixels inverted.
+ */
+JageImgEffects.invert = function (img)  {
+    var pixels = JagePen.getPixels(img);
+    var result = JagePen.createImage(img.width, img.height);
+    var context = result.getContext("2d");
+    
+    for(var i = 0; i< pixels.length; i += 4) {
+        pixels[i] = (255 - pixels[i]);
+        pixels[i+1] = (255 - pixels[i+1]);
+        pixels[i+2] = (255 - pixels[i+2]);
+    }
+    
+    // put our pixels into the resulting image.
+    context.putImageData(pixels.imgData,0,0);
+    return result;
+}
+
+/**
+ * Static method that returns a copy of an image that adds a color to its pixels.
+ */
+JageImgEffects.add = function (img, r, g, b)  {
+    var pixels = JagePen.getPixels(img);
+    var result = JagePen.createImage(img.width, img.height);
+    var context = result.getContext("2d");
+    
+    for(var i = 0; i< pixels.length; i += 4) {
+        pixels[i] = pixels[i] + r;
+        pixels[i+1] = pixels[i+1] + g;
+        pixels[i+2] = pixels[i+2] + b;
+    }
+    
+    // put our pixels into the resulting image.
+    context.putImageData(pixels.imgData,0,0);
+    return result;
+}
+
+
+/**
+ * Static method that returns a copy of an image that subtracts a color to its pixels.
+ */
+JageImgEffects.sub = function (img, r, g, b)  {
+    var pixels = JagePen.getPixels(img);
+    var result = JagePen.createImage(img.width, img.height);
+    var context = result.getContext("2d");
+    
+    for(var i = 0; i< pixels.length; i += 4) {
+        pixels[i] = pixels[i] - r;
+        pixels[i+1] = pixels[i+1] - g;
+        pixels[i+2] = pixels[i+2] - b;
+    }
+    
+    // put our pixels into the resulting image.
+    context.putImageData(pixels.imgData,0,0);
+    return result;
+}
+
  
  

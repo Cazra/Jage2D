@@ -45,5 +45,23 @@ Your web browser must support the following features to use the JAGE 2D library:
 * Javascript must be turned on.
 * It must support HTML 5.
 
-
+FAQ:
+----------------
+Q: "Why won't the imageEffects examples work?"
+A: Most browsers prevent Canvas from directly reading the pixels of images from 
+   cross-origin sources. For whatever reason, files on your own machine count as being
+   from cross-origin sources for this. 
+   
+   Here's how you get around it to run the examples 
+   on your own machine: 
+   
+   Install Python on your machine if you don't already have it. 
+   Open a command prompt at your root working directory. (the same directory as this README file 
+   if you're playing with the examples in a cloned Jage2D repository). 
+   Enter "python -m SimpleHTTPServer" into the command prompt. You now have a localhost server! 
+   
+   The images in those examples should work now as long as you access them from localhost:8000. 
+   
+   For example, if you want to run "/examples/imageEffects/add.html", enter the address 
+   "localhost:8000/examples/imageEffects/add.html" into your browser's address bar.
 

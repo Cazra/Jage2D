@@ -14,8 +14,9 @@ function TestApp(canvas,id) {
     
     // We'll use some of my artwork as a really big test image to demonstrate the camera object with.
     self.testImg = new Image();
-    self.testImg.src = 'http://fc06.deviantart.net/fs70/f/2012/228/d/9/vacation_to_earth_by_cazra-d5bdt6n.png';
+    self.testImg.src = '../bigExampleImg.png'; 
     
+    // Here we're adding the testImg to our app's JageImageLoader so that we can wait for it to finish loading.
     self.imageLoader.addImage(self.testImg);
     
     self.logic = function() { 
@@ -64,6 +65,8 @@ function TestApp(canvas,id) {
         pen.pen.font = "12px sans-serif";
         
         if(self.imageLoader.isLoading) {
+            // while our test image is still loading, display some big text 
+            // to let the user know that it is loading.
             pen.pen.font = "28px sans-serif";
             pen.drawString("Loading test image... ",300,340);
         }
@@ -83,8 +86,8 @@ function TestApp(canvas,id) {
             pen.drawString("Use mouse wheel to zoom in and out.", 20, 40);
             pen.drawString("Hold Q to rotate the camera.", 20, 60);
             pen.drawString("Press R to reset the camera.", 20, 80);
-            pen.drawString(self.timer.frameRate, 480,20);
         }
+        pen.drawString(self.timer.frameRate, 480,20);
     }
     
     return self;
