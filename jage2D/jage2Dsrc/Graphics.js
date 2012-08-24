@@ -163,7 +163,7 @@ function JagePen(pen) {
     
     /** Draws a line using the current stroke style. */
     this.drawLine = function (x1, y1, x2, y2) {
-        if(!x2) {
+        if(x2 == undefined) {
             // only 2 arguments: assume the args are points p1, p2.
             this.pen.beginPath();
             this.pen.moveTo(x1.x, x1.y);
@@ -180,7 +180,7 @@ function JagePen(pen) {
     
     /** Draws a quadratic curve using the current stroke style. */
     this.drawQuadCurve = function (x1,y1, cx, cy, x2, y2) {
-        if(!cy) {
+        if(cy == undefined) {
             // only 3 arguments: assume the args are points p1, control, p2.
             this.pen.beginPath();
             this.pen.moveTo(x1.x, x1.y);
@@ -197,7 +197,7 @@ function JagePen(pen) {
     
     /** Draws a cubic curve using the current stroke style. */
     this.drawCubicCurve = function (x1, y1, cx1, cy1, cx2, cy2, x2, y2) {
-        if(!cx2) {
+        if(cx2 == undefined) {
             // only 4 arguments:
             // assume the args are points p1, ctrl1, ctrl2, p2.
             this.pen.beginPath();
@@ -215,7 +215,7 @@ function JagePen(pen) {
     
     /** Draws text using the current fill and stroke style. */
     this.drawString = function (txt, x, y, maxWid, opts) {
-        if(!maxWid)
+        if(maxWid == undefined)
             maxWid = this.pen.measureText(txt).width;
         
         if(!opts)
@@ -228,11 +228,11 @@ function JagePen(pen) {
     
     /** Draws an image from an image element or another canvas. */
     this.drawImage = function(img, x, y, w, h, sx, sy, sw, sh) {
-        if(!w) {
+        if(w == undefined) {
             // just draw the image as-is.
             this.pen.drawImage(img, x, y);
         }
-        else if(!sh) {
+        else if(sh == undefined) {
             // draw scaled image
             this.pen.drawImage(img, x, y, w, h);
         }
@@ -288,6 +288,35 @@ JagePen.createImage = function (w,h) {
     var result = document.createElement("canvas");
     result.width = w;
     result.height = h;
+    return result;
+}
+
+
+/** Creates a canvas image of a string. */
+JagePen.createStringImage = function(string, font, color, w, h) {
+    var textMCan = document.createElement("canvas").getContext("2d");
+    textMCan.font = font;
+    var textWidth = textMCan.measureText(string).width;
+    var textHeight = textMCan.measureText("m").width * 1.3; // the length of lowercase m is usually a good approximation.
+    
+    var result = document.createElement("canvas");
+    var ctx = result.getContext("2d");
+    
+    if(!w)
+        w = textWidth;
+    result.width = w;
+    
+    if(!h)
+        h = textHeight; 
+    result.height = h;
+    
+    ctx.fillStyle = color;
+    ctx.font = font;
+    
+    Jage.log(ctx.font + " " + font);
+    
+    ctx.fillText(string,0, h - 1);
+    //ctx.strokeText(string,0, result.height-1);
     return result;
 }
 

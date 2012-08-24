@@ -65,3 +65,14 @@ A: Most browsers prevent Canvas from directly reading the pixels of images from
    For example, if you want to run "/examples/imageEffects/add.html", enter the address 
    "localhost:8000/examples/imageEffects/add.html" into your browser's address bar.
 
+Q: "Did you make the graphics used in the examples?"
+A: Yes. If you like them, you can check out more of my artwork at http://cazra.deviantart.com.
+
+Q: "Why are the examples filled with ponies?"
+A: Because pwnies are awesome, I'm an artist, and I like to draw them. 
+
+Q: "Can I use your artwork?"
+A: You may use the artwork from my Jage2D examples for noncommercial, nonprofit purposes only,
+   as long as you also give me credit for it. 
+
+
