@@ -79,10 +79,10 @@ function JagePen(pen) {
     this.trans = JageAffTrans.id();
     
     /** A constant used by some methods to tell the pen to only stroke a shape and not fill it. */
-    this.ONLYSTROKE = 0x00000001;
+    this.STROKE = 0x00000001;
     
     /** A constant used by some methods to tell the pen to only fill a shape and not stroke it. */
-    this.ONLYFILL = 0x00000010;
+    this.FILL = 0x00000010;
     
     // METHODS
     
@@ -106,9 +106,9 @@ function JagePen(pen) {
         
         if(!opts)
             opts = 0x11;
-        if((opts & this.ONLYFILL) != 0) 
+        if((opts & this.FILL) != 0) 
             this.pen.fill();
-        if((opts & this.ONLYSTROKE) != 0)
+        if((opts & this.STROKE) != 0)
             this.pen.stroke();
     }
     
@@ -124,9 +124,9 @@ function JagePen(pen) {
         
         if(!opts)
             opts = 0x11;
-        if((opts & this.ONLYFILL) != 0) 
+        if((opts & this.FILL) != 0) 
             this.pen.fill();
-        if((opts & this.ONLYSTROKE) != 0)
+        if((opts & this.STROKE) != 0)
             this.pen.stroke();
     }
     
@@ -134,9 +134,9 @@ function JagePen(pen) {
     this.drawRect = function (x,y,w,h, opts) {
         if(!opts)
             opts = 0x11;
-        if((opts & this.ONLYFILL) != 0) 
+        if((opts & this.FILL) != 0) 
             this.pen.fillRect(x,y,w,h);
-        if((opts & this.ONLYSTROKE) != 0)
+        if((opts & this.STROKE) != 0)
             this.pen.strokeRect(x,y,w,h);
     }
     
@@ -155,9 +155,9 @@ function JagePen(pen) {
         
         if(!opts)
             opts = 0x11;
-        if((opts & this.ONLYFILL) != 0) 
+        if((opts & this.FILL) != 0) 
             this.pen.fill();
-        if((opts & this.ONLYSTROKE) != 0)
+        if((opts & this.STROKE) != 0)
             this.pen.stroke();
     }
     
@@ -220,9 +220,9 @@ function JagePen(pen) {
         
         if(!opts)
             opts = 0x11;
-        if((opts & this.ONLYFILL) != 0) 
+        if((opts & this.FILL) != 0) 
             this.pen.fillText(txt,x,y,maxWid);
-        if((opts & this.ONLYSTROKE) != 0)
+        if((opts & this.STROKE) != 0)
             this.pen.strokeText(txt,x,y,maxWid);
     }
     
@@ -304,23 +304,93 @@ JagePen.createStringImage = function(string, font, color, w, h) {
     
     if(!w)
         w = textWidth;
+    if(w == 0)
+        w = 1;
     result.width = w;
     
     if(!h)
         h = textHeight; 
-    result.height = h;
+    if(h == 0)
+        h = 1;
+    result.height = h*1.3;
     
     ctx.fillStyle = color;
     ctx.font = font;
-    
-    Jage.log(ctx.font + " " + font);
     
     ctx.fillText(string,0, h - 1);
     //ctx.strokeText(string,0, result.height-1);
     return result;
 }
 
+/** 
+ * Converts a color from the HSB/HSV model to the RGB model. 
+ * All inputs are in the range [0,1], although h can be any floating point number. 
+ * It will be wrapped to a value in [0,1] by subtracting its floor. 
+ * The output is an array containing the RGB values of the converted color, each are integers in the range [0,255]. 
+ */
+JagePen.hsb2rgb = function(h,s,b) {
+    var hp = (h-Math.floor(h))*6.0;
+    var chroma = s*b;
+    var x = chroma*(1-Math.abs(hp % 2 - 1));
+    var m = b-chroma;
+    
+    // convert chroma and x to be in our color byte range [0,255]
+    chroma = Math.floor(chroma*255);
+    x = Math.floor(x*255);
+    m = Math.floor(m*255);
+    
+    if(hp >= 0 && hp < 1)
+        return [chroma + m, x + m, m];
+    else if(hp >= 1 && hp < 2)
+        return [x + m, chroma + m, m];
+    else if(hp >= 2 && hp < 3)
+        return [m, chroma + m, x + m];
+    else if(hp >= 3 && hp < 4)
+        return [m, x + m, chroma + m];
+    else if(hp >= 4 && hp < 5)
+        return [x + m, m, chroma + m];
+    else if(hp >= 5 && hp < 6)
+        return [chroma + m, m, x + m];
+    else
+        return [m, m, m];
+}
 
+/** 
+ * Converts a color from the RGB model to the HSB/HSV model. 
+ * All inputs are integers in the range [0,255]. 
+ * The output is an array containing the HSB values of the converted color, each in the range [0,1].
+ */
+
+JagePen.rgb2hsb = function(r, g, b) {
+    var max = Math.max(r,g,b);
+    var min = Math.min(r,g,b);
+    var chroma = max-min;
+    
+    // compute the hue
+    var hue = 0;
+    if(chroma == 0) 
+        hue = 0;
+    else if(max == r)
+        hue = ((g - b)/chroma) % 6;
+    else if(max = g)
+        hue = ((b-r)/chroma) + 2;
+    else
+        hue = ((r-g)/chroma) + 4;
+    hue /= 6.0;
+    
+    // compute the brightness/value
+    var brightness = max;
+    
+    // compute the saturation
+    var saturation = 0;
+    if(chroma != 0)
+        saturation = chroma/brightness;
+        
+    return [hue, saturation, brightness/255.0];
+}
+
+ 
+/** A helper method that converts an Image object into a Canvas object. */
 JagePen.convertImg2Canvas = function(image) {
     var result = JagePen.createImage(image.width,image.height);
     var context = result.getContext("2d");
