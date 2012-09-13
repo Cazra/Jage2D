@@ -456,11 +456,7 @@ JagePen.getPixels = function(image) {
     }
     
     // hack on some other information to our pixel array object.
-    pixels.width = image.width;
-    pixels.height = image.height;
-    pixels.imgData = imgData;
-    
-    return pixels;
+    return [pixels, imgData];
 }
 
 
@@ -474,7 +470,10 @@ function JageImgEffects() {
  * transparent.
  */
 JageImgEffects.transparentColor = function (img, r, g, b)  {
-    var pixels = JagePen.getPixels(img);
+    var pixelsdata = JagePen.getPixels(img);
+    var pixels = pixelsdata[0];
+    var imgData = pixelsdata[1];
+    
     var result = JagePen.createImage(img.width, img.height);
     var context = result.getContext("2d");
     
@@ -490,7 +489,7 @@ JageImgEffects.transparentColor = function (img, r, g, b)  {
     }
     
     // put our pixels into the resulting image.
-    context.putImageData(pixels.imgData,0,0);
+    context.putImageData(imgData,0,0);
     return result;
 }
 
@@ -502,18 +501,22 @@ JageImgEffects.transparentColor = function (img, r, g, b)  {
  * size.
  */
 JageImgEffects.alphaMap = function (img, alphaImg)  {
-    var pixels = JagePen.getPixels(img);
+    var pixelsdata = JagePen.getPixels(img);
+    var pixels = pixelsdata[0];
+    var imgData = pixelsdata[1];
+    
     var result = JagePen.createImage(img.width, img.height);
     var context = result.getContext("2d");
     
-    var alphaPixels = JagePen.getPixels(alphaImg);
+    var alphaPixelsdata = JagePen.getPixels(alphaImg);
+    var alphaPixels = alphaPixelsdata[0];
     
     for(var i = 0; i< pixels.length; i += 4) {
         pixels[i+3] = alphaPixels[i];
     }
     
     // put our pixels into the resulting image.
-    context.putImageData(pixels.imgData,0,0);
+    context.putImageData(imgData,0,0);
     return result;
 }
 
@@ -522,7 +525,10 @@ JageImgEffects.alphaMap = function (img, alphaImg)  {
  * Static method that returns a copy of an image with the rgb values of its pixels inverted.
  */
 JageImgEffects.invert = function (img)  {
-    var pixels = JagePen.getPixels(img);
+    var pixelsdata = JagePen.getPixels(img);
+    var pixels = pixelsdata[0];
+    var imgData = pixelsdata[1];
+    
     var result = JagePen.createImage(img.width, img.height);
     var context = result.getContext("2d");
     
@@ -533,7 +539,7 @@ JageImgEffects.invert = function (img)  {
     }
     
     // put our pixels into the resulting image.
-    context.putImageData(pixels.imgData,0,0);
+    context.putImageData(imgData,0,0);
     return result;
 }
 
@@ -541,7 +547,10 @@ JageImgEffects.invert = function (img)  {
  * Static method that returns a copy of an image that adds a color to its pixels.
  */
 JageImgEffects.add = function (img, r, g, b)  {
-    var pixels = JagePen.getPixels(img);
+    var pixelsdata = JagePen.getPixels(img);
+    var pixels = pixelsdata[0];
+    var imgData = pixelsdata[1];
+    
     var result = JagePen.createImage(img.width, img.height);
     var context = result.getContext("2d");
     
@@ -550,9 +559,9 @@ JageImgEffects.add = function (img, r, g, b)  {
         pixels[i+1] = pixels[i+1] + g;
         pixels[i+2] = pixels[i+2] + b;
     }
-    
+
     // put our pixels into the resulting image.
-    context.putImageData(pixels.imgData,0,0);
+    context.putImageData(imgData,0,0);
     return result;
 }
 
@@ -561,7 +570,10 @@ JageImgEffects.add = function (img, r, g, b)  {
  * Static method that returns a copy of an image that subtracts a color to its pixels.
  */
 JageImgEffects.sub = function (img, r, g, b)  {
-    var pixels = JagePen.getPixels(img);
+    var pixelsdata = JagePen.getPixels(img);
+    var pixels = pixelsdata[0];
+    var imgData = pixelsdata[1];
+    
     var result = JagePen.createImage(img.width, img.height);
     var context = result.getContext("2d");
     
@@ -572,7 +584,7 @@ JageImgEffects.sub = function (img, r, g, b)  {
     }
     
     // put our pixels into the resulting image.
-    context.putImageData(pixels.imgData,0,0);
+    context.putImageData(imgData,0,0);
     return result;
 }
 
