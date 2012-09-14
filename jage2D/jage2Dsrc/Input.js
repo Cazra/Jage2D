@@ -157,11 +157,24 @@ function JageMouse(canvas) {
     canvas.onmousemove = function(evt) {
         var myApp = this.boundJageApp;
         
-        myApp.mouse.position.x = evt.pageX - this.offsetLeft;
-        myApp.mouse.position.y = evt.pageY - this.offsetTop;
+        // get the absolute position of the canvas element in the document.
+        var obj = this;
+        var offX = 0;
+        var offY = 0;
+        while( obj.nodeName != "BODY") {
+            offX += obj.offsetLeft;
+            offY += obj.offsetTop;
+            
+            obj = obj.parentNode;
+        }
+        
+        // set the mouse's canvas coordinates.
+        myApp.mouse.position.x = evt.pageX - offX;
+        myApp.mouse.position.y = evt.pageY - offY;
         myApp.mouse.x = myApp.mouse.position.x;
         myApp.mouse.y = myApp.mouse.position.y;
     }
+    
     
     /** Mouse button press handler. */
     canvas.onmousedown = function(evt) {
