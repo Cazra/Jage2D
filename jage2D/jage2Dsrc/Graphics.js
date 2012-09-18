@@ -178,6 +178,68 @@ function JagePen(pen) {
         }
     }
     
+    /** Draws a dashed line using the current stroke style */
+    this.drawDashedLine = function(x1, y1, x2, y2, dashLen, gapLen) {
+        if(x1 == x2 && y1 == y2)
+            return;
+        
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        
+        // Do the heavy math that will be reused frequently
+        var angleTo = JageMath.angleToRads(x1, y1, x2, y2);
+        var dashdx = dashLen*Math.cos(angleTo);
+        var dashdy = dashLen*Math.sin(angleTo)*-1;
+        var gapdx = gapLen*Math.cos(angleTo);
+        var gapdy = gapLen*Math.sin(angleTo)*-1;
+        
+        var x = x1;
+        var y = y1;
+        if(x != x1)
+            Jage.log("herpityderp!");
+        if(y != y1)
+            Jage.log("herpityderp!");
+        
+        this.pen.beginPath();
+    //    this.pen.moveTo(x1,y1); 
+        while(x != x2 && y != y2) {
+            // draw a dash
+            this.pen.moveTo(x,y);
+            
+            var nx = x + dashdx;
+            var ny = y + dashdy;
+            
+            // end the dash short if we're at the end of the line.
+            if((dx < 0 && nx < x2) || (dx > 0 && nx > x2))
+                nx = x2;
+            if((dy < 0 && ny < y2) || (dy > 0 && ny > y2))
+                ny = y2;
+            
+            this.pen.lineTo(nx,ny);
+            
+            x = nx;
+            y = ny;
+            
+            // draw a gap
+            nx = x + gapdx;
+            ny = y + gapdy;
+            
+            // end the gap short if we're at the end of the line.
+            if((dx < 0 && nx < x2) || (dx > 0 && nx > x2))
+                nx = x2;
+            if((dy < 0 && ny < y2) || (dy > 0 && ny > y2))
+                ny = y2;
+
+            x = nx;
+            y = ny;
+        }
+        
+    //    this.pen.lineTo(x2,y2);
+        this.pen.stroke();
+        
+        
+    }
+    
     /** Draws a quadratic curve using the current stroke style. */
     this.drawQuadCurve = function (x1,y1, cx, cy, x2, y2) {
         if(cy == undefined) {
