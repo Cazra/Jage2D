@@ -103,3 +103,20 @@ Jage.loadJageScript("jage2Dsrc/Graphics.js");
 Jage.loadJageScript("jage2Dsrc/App.js");
 */
 
+/** Gets the absolute position of a DOM element in the document. */
+Jage.getAbsolutePosition = function(element) {
+    // get the absolute position of the canvas element in the document.
+    var obj = element;
+    var offX = 0;
+    var offY = 0;
+    while( obj.nodeName != "BODY") {
+        offX += obj.offsetLeft;
+        offY += obj.offsetTop;
+        
+        obj = obj.parentNode;
+    }
+    
+    return [offX, offY];
+};
+
+
