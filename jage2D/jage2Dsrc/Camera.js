@@ -133,7 +133,7 @@ function JageCamera(canvas) {
     
     /** Moves the camer's focal center without altering the current camera transform. */
     this.moveCenter = function (cx, cy) {
-        if(!cy) {
+        if(cy == undefined) {
             // single argument: cx is actually a point in screen coordinates.
             cy = cx.y
             cx = cx.x

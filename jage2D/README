@@ -33,11 +33,15 @@ Jage2D is a Javascript + Canvas based 2D game engine. It is designed to not have
 rely on any external scripts such jQuery and to be cross-browser compatible. This game  
 engine also supports multiple Jage2D applications running in the same web page! 
 
+Jage2D also provides code for creating GUI components inside a Canvas like those in Java's 
+swing package. This makes Jage2D useful not only for game development, but also for creating 
+rich interactive web applications. 
+
 I'll eventually get around to expanding this README and creating some example applications. 
 Hang in there until then!
 
 All components and examples of Jage2D, unless otherwise specified, have been tested in 
-Google Chrome and Internet Explorer 9.
+Google Chrome, Firefox, and Internet Explorer 9.
 
 Requirements:
 ----------------

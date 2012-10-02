@@ -120,3 +120,49 @@ Jage.getAbsolutePosition = function(element) {
 };
 
 
+
+Jage.observedFocusables = [];
+Jage.nextObservableID = 0;
+
+/** 
+ * Tells the Jage system to observe a Jage entity that can gain focus for user input. 
+ * It prevents duplicates from being observed.
+ * Returns true if successful. Else returns false. 
+ */
+Jage.observeFocusable = function(focusable) {
+    if(!focusable.trait_focusable) 
+        return false;
+    
+    // Assign the focusable component a unique id for the purpose of being observed for focus by the Jage system. 
+    if(!focusable.JageObservableID) {
+        focusable.JageObservableID = "id" + Jage.nextObservableID;
+        Jage.nextObservableID++;
+    }
+    
+    // Add the focusable component into our table of observed focusable Jage components. 
+    Jage.observedFocusables[focusable.JageObservableID] = focusable;
+    
+    return true;
+}
+
+
+/** Grants focus to a JageComponent and relinquishes focus from all other observed focusable Jage components. */
+Jage.requestFocusFor = function(focusable) {
+    if(!focusable.trait_focusable) 
+        return false;
+    
+    // add focusable to our table of observed focusables if it isn't already.
+    Jage.observeFocusable(focusable);
+    
+    // relinquish focus from all focusables.
+    for(var i in Jage.observedFocusables) {
+        var other = Jage.observedFocusables[i];
+        other.hasFocus = false;
+    }
+    
+    // grant our focusable focus.
+    focusable.hasFocus = true;
+    
+    return true;
+}
+

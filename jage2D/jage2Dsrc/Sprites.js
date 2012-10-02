@@ -39,8 +39,11 @@ function JageSprite(x, y) {
     // The rotation in degrees of this sprite's image.
     this.angle = 0.0;
     
-    // The current affine transform for this sprite's image.
+    // The current rotate-scale affine transform for this sprite's image.
     this.trans = null;
+    
+    // The complete affine transform for this sprite's image.
+    this.curTrans = JageAffTrans.id();
     
     // flag for letting the sprite to update its transform before rendering.
     this.transNeedsUpdate = true;
@@ -89,6 +92,7 @@ function JageSprite(x, y) {
         curTrans.translate(this.x, this.y);
         curTrans.cat(this.trans);
         curTrans.translate(0-this.focalX, 0-this.focalY);
+        this.curTrans = curTrans;
         pen.setTransform(curTrans);
         
         // change globalAlpha to account for this sprite's opacity.
