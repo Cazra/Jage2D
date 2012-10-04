@@ -215,6 +215,9 @@ function JageMouse(canvas) {
                 }
             }
         }
+        
+        evt.stopPropagation();
+        evt.preventDefault();
     }
     
     /** Mouse button release handler. */
@@ -249,6 +252,9 @@ function JageMouse(canvas) {
                 }
             }
         }
+        
+        evt.stopPropagation();
+        evt.preventDefault();
     }
     
     /** Mouse wheel handler */
@@ -261,6 +267,9 @@ function JageMouse(canvas) {
             myApp.mouse.wuslf = true;
         if(delta > 0)
             myApp.mouse.wdslf = true;
+            
+        evt.stopPropagation();
+        evt.preventDefault();
     };
     
     if(canvas.addEventListener) {
