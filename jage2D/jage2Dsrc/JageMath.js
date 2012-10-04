@@ -72,6 +72,23 @@ JageMath.angleToPt = function (p1, p2) {
     }
 }
 
+JageMath.angleToRads = function (x1, y1, x2, y2) {
+    var dx = x2 - x1;
+    var dy = y1 - y2;
+    
+    var res = Math.atan2(dy,dx);
+    if(res < 0) res += Math.PI*2;
+    return res;
+}
+ 
+JageMath.angleToPtRads = function (p1, p2) {
+    try {
+        return JageMath.angleToRads(p1.x, p1.y, p2.x, p2.y);
+    } catch (err) {
+        return -1; // error value for when p1 and p2 are not valid points.
+    }
+}
+
 
 /** computes the distance between two points. */
 JageMath.dist = function (x1, y1, x2, y2) {
