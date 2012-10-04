@@ -38,6 +38,7 @@ function JageMouse(canvas) {
     /** Left button presses */
     this.isLeftPressed = false;
     this.justLeftPressed = false;
+    this.justLeftPressedRep = false;
     this.justLeftClicked = false;
     
     this.plslf = false;
@@ -46,6 +47,7 @@ function JageMouse(canvas) {
     /** Right button presses */
     this.isRightPressed = false;
     this.justRightPressed = false;
+    this.justRightPressedRep = false;
     this.justRightClicked = false;
     
     this.prslf = false;
@@ -54,6 +56,7 @@ function JageMouse(canvas) {
     /** Middle button presses */
     this.isMiddlePressed = false;
     this.justMiddlePressed = false;
+    this.justMiddlePressedRep = false;
     this.justMiddleClicked = false;
     
     this.pmslf = false;
@@ -397,6 +400,10 @@ function JageKeyboard(canvas) {
     this.justPressed = [];
     this.justTyped = [];
     
+    // This is a special table that is true for a key when it is just pressed, and then it continues
+    // to flash true intermitently if it continues to be pressed. 
+    this.justPressedRep = [];
+    
     /** List of keycodes pressed or released since last frame */
     this.pslf = [];
     this.rslf = [];
@@ -425,10 +432,13 @@ function JageKeyboard(canvas) {
         // Process specific keys
         this.justPressed = [];
         this.justTyped = [];
+        this.justPressedRep = [];
         
         for(keycode in this.pslf) {
             if(!this.isPressed[keycode]) this.justPressed[keycode] = true;
             this.isPressed[keycode] = true;
+            
+            this.justPressedRep[keycode] = true;
             
             this.lastKeyPressed = keycode;
         }

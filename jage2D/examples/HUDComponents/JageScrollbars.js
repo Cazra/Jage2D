@@ -8,78 +8,36 @@
 /** A very simple Jage2D application that displays the frame rate as a moving sprite. */
 function TestApp(canvas,id) {
     var self = new JageApp(canvas,id);
-    
-    // our camera object.
-    self.camera = new JageCamera(canvas);
-    
-    // our JagePane
-    self.pane = new Pane1(100,200,640,480, canvas);
+
+    // our JagePanes. pane3 is nested in pane2 which is nested in pane1.
+    self.pane1 = new TestPane(100,200,640,480, canvas);
     
     // We'll use some of my artwork as a really big test image to demonstrate the camera object with.
+    // In this example, this is really just to show that pane1 is clipping properly.
     self.testImg = new Image();
     self.testImg.src = '../bigExampleImg.png'; 
     
-    // Here we're adding the testImg to our app's JageImageLoader so that we can wait for it to finish loading.
-    self.imageLoader.addImage(self.testImg);
-    
+    // Here we're adding the images to our app's JageImageLoader so that we can wait for it to finish loading.
+    HUDImages.load(self.imageLoader);
     
     
     self.logic = function() { 
         // do nothing if our test image is still loading.
         if(self.imageLoader.isLoading) return;
         
+        // prepare the cropped images used by our HUD components.
+        if(HUDImages.buttonsImg.justFinishedLoading) {
+            HUDImages.buttonsImg.justFinishedLoading = false;
+            HUDImages.prepareCroppedImages();
+            
+        }
+        
         self.mouse.poll();
         self.keyboard.poll();
         
-        // camera-controlled background. This isn't important for this example except for demonstrating that the top pane is clipping properly.
-        self.bgCameraControls();
-       
-        // see if our mouse is over any of the panes!
-        self.pane.isMouseOvered = false;
-        self.pane.subPane.isMouseOvered = false;
-        self.pane.subPane.subPane.isMouseOvered = false;
-        if(self.pane.subPane.subPane.containsScreenPt(self.mouse.position))
-            self.pane.subPane.subPane.isMouseOvered = true;
-        else if(self.pane.subPane.containsScreenPt(self.mouse.position))
-            self.pane.subPane.isMouseOvered = true;
-        else if(self.pane.containsScreenPt(self.mouse.position))
-            self.pane.isMouseOvered = true;
-        
-        
+        self.pane1.logic(self.mouse, self.keyboard);
     };
     
-    
-    // Does the camera control stuff from the Camera example. This isn't the important part of this example.
-    self.bgCameraControls = function() {
-        // drag the left mouse button to pan.
-        if(self.mouse.isLeftPressed) {
-            self.camera.drag(self.mouse.position);
-        }
-        
-        // stop the drag when we release the left mouse button.
-        if(self.mouse.justLeftClicked) {
-            self.camera.endDrag();
-        }
-        
-        // zoom in and out with mouse wheel
-        if(self.mouse.wheel != 0) {
-            self.camera.zoomAtScr(1.0 + (0.25*self.mouse.wheel), self.mouse.position);
-        }
-        
-        // rotate the camera around the last point you clicked by pressing Q
-        if(self.keyboard.isPressed[Keys.Q]) {
-            self.camera.angle += 5;
-            
-            // update the camera's transform (in this example, the code for rotation is all that would be updated by this since
-            // drag and zoomAtScr update the transform automatically.
-            self.camera.updateTransform();
-        }
-        
-        // reset the camera by pressing R
-        if(self.keyboard.isPressed[Keys.R]) {
-            self.camera.reset();
-        }
-    }
     
     
     self.render = function(pen) {
@@ -94,31 +52,15 @@ function TestApp(canvas,id) {
             pen.drawString("Loading test image... ",300,340);
         }
         else {
-            // Use the camera's transform, but save our original transform first.
-            var origTrans = pen.getTransform();
-            pen.setTransform(self.camera.trans);
-            
-            // draw our test image.
-            pen.drawImage(self.testImg,0,0);
-            
-            // restore our original transform.
-            pen.setTransform(origTrans);
-            
             // draw our pane.
-            self.pane.render(pen);
+            self.pane1.render(pen);
             
             // instructional text
-            pen.drawString("Drag with mouse to pan the camera. ",20,20);
-            pen.drawString("Use mouse wheel to zoom in and out.", 20, 40);
-            pen.drawString("Hold Q to rotate the camera.", 20, 60);
-            pen.drawString("Press R to reset the camera.", 20, 80);
+            pen.drawString("Use the scrollbars or mouse wheel to scroll the image in its pane. ",20,20);
+            pen.drawString("Use the Page Up/Page Down to scroll the image a lot. ",20,40);
+            pen.drawString("Hold Up or Down to scale the image.", 20, 60);
+
             
-            var pane1mousePos = self.pane.screen2CompCoords(self.mouse.position);
-            var pane2mousePos = self.pane.subPane.screen2CompCoords(self.mouse.position);
-            var pane3mousePos = self.pane.subPane.subPane.screen2CompCoords(self.mouse.position);
-            pen.drawString("Mouse position in pane1: " + pane1mousePos.toString(), 20, 120);
-            pen.drawString("Mouse position in pane2: " + pane2mousePos.toString(), 20, 140);
-            pen.drawString("Mouse position in pane3: " + pane3mousePos.toString(), 20, 160);
         }
         pen.drawString(self.timer.frameRate, 480,20);
     }
@@ -128,80 +70,207 @@ function TestApp(canvas,id) {
 
 
 /** A pane with a pane in it. */
-function Pane1(x,y,w,h,par) {
+function TestPane(x,y,w,h,par) {
     var self = new JagePane(x,y,w,h,par);
     
-    // highlights this pane if true
-    self.isMouseOvered = false;
+    // the vertical scrollbar
+    self.vScrollbar = new JageVScrollbar(self);
+    self.vScrollbar.btnDec = new UpScrollBtn(self.vScrollbar);
+    self.vScrollbar.btnInc = new DownScrollBtn(self.vScrollbar);
     
-    // our nested pane
-    self.subPane = new Pane2(160, 100, 640, 480, self);
-    self.subPane.rotate(45);
-    self.subPane.scale(2,1);
+    // the vertical scrollbar
+    self.hScrollbar = new JageHScrollbar(self);
+    self.hScrollbar.btnDec = new LeftScrollBtn(self.hScrollbar);
+    self.hScrollbar.btnInc = new RightScrollBtn(self.hScrollbar);
     
-    self.drawContents = function(pen) {
-        if(self.isMouseOvered)
-            pen.clear("#AFA");
+    // The test image displayed in our scrollable pane.
+    self.testImg = new Image();
+    self.testImg.src = '../bigExampleImg.png'; 
+    
+    // The scale for the image.
+    self.zoom = 1.0;
+    
+    
+    
+    self.logic = function(mouse, keyboard) {
+        // update the scrollbar's mouse state
+        self.vScrollbar.updateState(mouse)
+        self.hScrollbar.updateState(mouse)
+        
+        // keyboard controls for scaling the image.
+        if(keyboard.isPressed[Keys.Up])
+            self.zoom *= 1.05;
+        if(keyboard.isPressed[Keys.Down])
+            self.zoom *= 0.95;
+        
+        
+        // mouse wheel can be used to scroll up the image
+        if(mouse.wheel < 0)
+            self.vScrollbar.setScrollPos(self.vScrollbar.scrollPos + self.vScrollbar.scrollInc*4);
+        if(mouse.wheel > 0)
+            self.vScrollbar.setScrollPos(self.vScrollbar.scrollPos - self.vScrollbar.scrollInc*4);
+        
+        
+        if(keyboard.justPressedRep[Keys.PageUp])
+            self.vScrollbar.setScrollPos(self.vScrollbar.scrollPos - self.vScrollbar.height);
+        if(keyboard.justPressedRep[Keys.PageDown])
+            self.vScrollbar.setScrollPos(self.vScrollbar.scrollPos + self.vScrollbar.height);
+        
+        // update the content dimensions of our pane's scrollbars.
+        self.vScrollbar.setContentHeight(self.testImg.height * self.zoom);
+        self.hScrollbar.setContentWidth(self.testImg.width * self.zoom);
+    }
+    
+    /** Draws the pane with its label, a red circle, and its contents. */
+    self.superdrawComponents = self.drawComponents;
+    self.drawComponents = function(pen) {
+        var origTrans = pen.getTransform();
+        
+        self.vScrollbar.scroll(pen);
+        self.hScrollbar.scroll(pen);
+        
+        pen.pen.scale(self.zoom,self.zoom);
+        pen.drawImage(self.testImg,0,0);
+        
+        // draw the contents of this pane.
+        self.superdrawComponents(pen);
+        
+        pen.setTransform(origTrans);
+        
+        // draw the scrollbar
+        self.vScrollbar.render(pen);
+        self.hScrollbar.render(pen);
+        
+        // draw an empty button thing in the corner where the scrollbars meet just to make the corner prettier.
+        // Without it, there would be sort of a hole there where you can see part of the image that is supposed to be "offscreen"
+        // in the scrolling area.
+        pen.drawImage(HUDImages.sbtnNotPressImg, self.hScrollbar.width, self.vScrollbar.height);
+    }
+
+    
+    return self;
+}
+
+
+// custom buttons for our scrollbars:
+function UpScrollBtn (scrollbar) {
+    var self = new JageButton(0,0,scrollbar);
+    
+    self.width = 16;
+    self.height = 16;
+    
+    self.draw = function(pen) {
+        if(self.isPressed && self.parent.isDragged)
+            pen.drawImage(HUDImages.sbtnPressImg,0,0);
         else
-            pen.clear("#FFF");
+            pen.drawImage(HUDImages.sbtnNotPressImg,0,0);
         
-        pen.setFill("red");
-        pen.drawString("Pane1", 10,20);
-        pen.drawCircle(160,100,20);
-        
-        self.subPane.render(pen);
+        if(self.isDisabled)
+            pen.drawImage(HUDImages.scrollUpGreyImg,0,0);
+        else
+            pen.drawImage(HUDImages.scrollUpImg,0,0);
     }
     
     return self;
 }
 
-/** A pane with a pane in it. */
-function Pane2(x,y,w,h,par) {
-    var self = new JagePane(x,y,w,h,par);
+
+function DownScrollBtn (scrollbar) {
+    var self = new JageButton(0,0,scrollbar);
     
-    // highlights this pane if true
-    self.isMouseOvered = false;
+    self.width = 16;
+    self.height = 16;
     
-    // our nested pane
-    self.subPane = new Pane3(50, 50, 320, 200, self);
-    self.subPane.rotate(-45);
-    
-    self.drawContents = function(pen) {
-        if(self.isMouseOvered)
-            pen.clear("#AFA");
+    self.draw = function(pen) {
+        if(self.isPressed && self.parent.isDragged)
+            pen.drawImage(HUDImages.sbtnPressImg,0,0);
         else
-            pen.clear("#FFF");
-            
-        pen.setFill("red");
-        pen.drawString("Pane2", 10,20);
-        pen.drawCircle(160,100,20);
+            pen.drawImage(HUDImages.sbtnNotPressImg,0,0);
         
-        self.subPane.render(pen);
+        if(self.isDisabled)
+            pen.drawImage(HUDImages.scrollDownGreyImg,0,0);
+        else
+            pen.drawImage(HUDImages.scrollDownImg,0,0);
     }
     
     return self;
 }
 
-/** A pane with no other panes in it. */
-function Pane3(x,y,w,h,par) {
-    var self = new JagePane(x,y,w,h,par);
-
-    // highlights this pane if true
-    self.isMouseOvered = false;
+function LeftScrollBtn (scrollbar) {
+    var self = new JageButton(0,0,scrollbar);
     
-    self.drawContents = function(pen) {
-        if(self.isMouseOvered)
-            pen.clear("#AFA");
+    self.width = 16;
+    self.height = 16;
+    
+    self.draw = function(pen) {
+        if(self.isPressed && self.parent.isDragged)
+            pen.drawImage(HUDImages.sbtnPressImg,0,0);
         else
-            pen.clear("#FFF");
+            pen.drawImage(HUDImages.sbtnNotPressImg,0,0);
         
-        pen.setFill("red");
-        pen.drawString("Pane3", 10,20);
-        pen.drawCircle(160,100,20);
+        if(self.isDisabled)
+            pen.drawImage(HUDImages.scrollLeftGreyImg,0,0);
+        else
+            pen.drawImage(HUDImages.scrollLeftImg,0,0);
     }
     
     return self;
 }
+
+
+function RightScrollBtn (scrollbar) {
+    var self = new JageButton(0,0,scrollbar);
+    
+    self.width = 16;
+    self.height = 16;
+    
+    self.draw = function(pen) {
+        if(self.isPressed && self.parent.isDragged)
+            pen.drawImage(HUDImages.sbtnPressImg,0,0);
+        else
+            pen.drawImage(HUDImages.sbtnNotPressImg,0,0);
+        
+        if(self.isDisabled)
+            pen.drawImage(HUDImages.scrollRightGreyImg,0,0);
+        else
+            pen.drawImage(HUDImages.scrollRightImg,0,0);
+    }
+    
+    return self;
+}
+
+
+
+/** A static library for the images used by the HUD. */
+function HUDImages() {}
+
+/** Gets the big image containing the images for all the HUD sprites and loads it. */
+HUDImages.load = function(imageLoader) {
+    HUDImages.buttonsImg = new Image();
+    HUDImages.buttonsImg.src = "hudButtons.png";
+    
+    imageLoader.addImage(HUDImages.buttonsImg);
+}
+
+/** Prepares the cropped images for all the HUD sprites and stores references to those images in the HUD library. */
+HUDImages.prepareCroppedImages = function() {
+    // small buttons press/unpress
+    HUDImages.sbtnNotPressImg = JagePen.cropImage(HUDImages.buttonsImg, 16, 0, 16, 16);
+    HUDImages.sbtnPressImg = JagePen.cropImage(HUDImages.buttonsImg, 32, 0, 16, 16);
+    
+    HUDImages.scrollUpImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,48,0,16,16), 255,200,255);
+    HUDImages.scrollDownImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,64,0,16,16), 255,200,255);
+    HUDImages.scrollUpGreyImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,80,0,16,16), 255,200,255);
+    HUDImages.scrollDownGreyImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,96,0,16,16), 255,200,255);
+    
+    HUDImages.scrollLeftImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,112,0,16,16), 255,200,255);
+    HUDImages.scrollRightImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,128,0,16,16), 255,200,255);
+    HUDImages.scrollLeftGreyImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,144,0,16,16), 255,200,255);
+    HUDImages.scrollRightGreyImg = JageImgEffects.transparentColor(JagePen.cropImage(HUDImages.buttonsImg,160,0,16,16), 255,200,255);
+}
+
+
+
 
 $(document).ready(function () {
 	// obtain our graphics context from the canvas object.
