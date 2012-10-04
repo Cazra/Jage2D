@@ -244,19 +244,26 @@ function JagePane(x, y, width, height, parent) {
     /** Flag for telling if this pane currently has input focus. Input focus is generally obtained by clicking in the pane's area. */
     self.hasFocus = false;
     
+    /** Optional vertical scrollbar. User must provide their own. */
+    self.vScrollbar = false;
+    
+    /** Optional horizontal scrollbar. User must provide their own. */
+    self.hScrollbar = false;
+    
+    /** Scrolling transform created by this frame's scrollbars, if they exist. */
+    self.scrollTransform = JageAffTrans.id();
+    
+    self.camera = false;
     
     /** Draws the pane and its components in its clipped area. */
     self.draw = function(pen) {
-        // save our transform
-        var origTrans = pen.getTransform();
-        
         // compute bounds for the pane's clipped area.
         var clipXLeft = 0; 
         var clipXRight = self.width;
         var clipYTop = 0;    
         var clipYBottom = self.height;
         
-        // draw the pane's contents in its clipped area.
+        // clip the area of the pane.
         pen.pen.save();
         pen.pen.beginPath();
         pen.pen.moveTo(clipXLeft, clipYTop);
@@ -264,9 +271,40 @@ function JagePane(x, y, width, height, parent) {
         pen.pen.lineTo(clipXRight, clipYBottom);
         pen.pen.lineTo(clipXLeft, clipYBottom);
         pen.pen.lineTo(clipXLeft, clipYTop);
-        pen.pen.clip(); 
+        pen.pen.clip();
+        
+        // save our transform
+        var origTrans = pen.getTransform();
+        
+        // Create the scroll transform and apply scrolling to this frame, if any.
+        self.scrollTransform = JageAffTrans.id();
+        if(self.vScrollbar)
+            self.scrollTransform.cat(JageAffTrans.tran(0, 0-self.vScrollbar.scrollPos));
+        if(self.hScrollbar)
+            self.scrollTransform.cat(JageAffTrans.tran(0-self.hScrollbar.scrollPos, 0));
+        pen.transform(self.scrollTransform);
+        
+        // draw the pane's interior components and then restore our old clipping region.
         self.drawComponents(pen);
         pen.pen.restore();
+        
+        // restore our transform.
+        pen.setTransform(origTrans);
+        
+        // render the scrolling components if they exist.
+        if(self.vScrollbar)
+            self.vScrollbar.render(pen);
+        if(self.hScrollbar)
+            self.hScrollbar.render(pen);
+        
+        // if this pane has both scrollbars, draw something to cover up the hole produced where they meet.
+        if(self.vScrollbar && self.hScrollbar) {
+            pen.transform(JageAffTrans.tran(self.vScrollbar.x, self.hScrollbar.y));
+            self.drawScrollCorner(pen);
+            // restore our transform.
+            pen.setTransform(origTrans);
+        }
+        
         
         // draw border
         if(self.hasBorder) {
@@ -277,8 +315,25 @@ function JagePane(x, y, width, height, parent) {
             pen.pen.restore();
         }
         
-        // restore our transform.
-        pen.setTransform(origTrans);
+        
+    }
+    
+    /** 
+     * Used to cover the hole produced in the corner where two scrollbars meet. 
+     * A default rendering is done here, but the user is encouraged to
+     * override this method to accomodate their applicaiton's look and feel.
+     */
+    self.drawScrollCorner = function(pen) {
+        pen.setFill("#CCC");
+        pen.setStroke("#888");
+        pen.drawRect(0, 0, self.vScrollbar.width, self.hScrollbar.height);
+    }
+    
+    
+    /** Finds the position of a point on the canvas in coordinates relative to the scrollable content of this pane. */
+    self.screen2ScrollCoords = function(pt) {
+        pt = self.screen2CompCoords(pt);
+        return self.scrollTransform.inv().apply(pt);
     }
     
     return self;

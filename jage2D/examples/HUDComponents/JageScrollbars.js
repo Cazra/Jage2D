@@ -90,9 +90,14 @@ function TestPane(x,y,w,h,par) {
     // The scale for the image.
     self.zoom = 1.0;
     
-    
+    // a local stolen reference to our application's mouse.
+    self.mouse = false;
     
     self.logic = function(mouse, keyboard) {
+        // steal our mouse reference.
+        if(!self.mouse)
+            self.mouse = mouse;
+            
         // update the scrollbar's mouse state
         self.vScrollbar.updateState(mouse)
         self.hScrollbar.updateState(mouse)
@@ -110,7 +115,7 @@ function TestPane(x,y,w,h,par) {
         if(mouse.wheel > 0)
             self.vScrollbar.setScrollPos(self.vScrollbar.scrollPos - self.vScrollbar.scrollInc*4);
         
-        
+        // Page Up/Down keys scroll vertically by the pane's height.
         if(keyboard.justPressedRep[Keys.PageUp])
             self.vScrollbar.setScrollPos(self.vScrollbar.scrollPos - self.vScrollbar.height);
         if(keyboard.justPressedRep[Keys.PageDown])
@@ -126,27 +131,37 @@ function TestPane(x,y,w,h,par) {
     self.drawComponents = function(pen) {
         var origTrans = pen.getTransform();
         
-        self.vScrollbar.scroll(pen);
-        self.hScrollbar.scroll(pen);
+        // apply our zoom. Be sure to update the scrollTransform too. Although it's already been applied, we
+        // need to use the zoomed version to correctly compute the mouse's world coordinates.
+        var zoomTrans = JageAffTrans.scale(self.zoom,self.zoom);
+        pen.transform(zoomTrans);
+        self.scrollTransform.cat(zoomTrans);
         
-        pen.pen.scale(self.zoom,self.zoom);
+        // Draw our large image.
         pen.drawImage(self.testImg,0,0);
         
         // draw the contents of this pane.
         self.superdrawComponents(pen);
         
+        // Draw a small circle at the mouse's world coordinates inside the scrollable area. 
+        var mouseWorld = self.screen2ScrollCoords(self.mouse.position);
+        pen.pen.lineWidth = 1;
+        pen.setStroke("black");
+        pen.setFill("black");
+        pen.drawCircle(mouseWorld.x, mouseWorld.y, 2);
+        
+        
         pen.setTransform(origTrans);
-        
-        // draw the scrollbar
-        self.vScrollbar.render(pen);
-        self.hScrollbar.render(pen);
-        
-        // draw an empty button thing in the corner where the scrollbars meet just to make the corner prettier.
-        // Without it, there would be sort of a hole there where you can see part of the image that is supposed to be "offscreen"
-        // in the scrolling area.
-        pen.drawImage(HUDImages.sbtnNotPressImg, self.hScrollbar.width, self.vScrollbar.height);
     }
-
+    
+    /** 
+     * draw an empty button thing in the corner where the scrollbars meet just to make the corner prettier.
+     * Without it, there would be sort of a hole there where you can see part of the image that is supposed to be "offscreen"
+     * in the scrolling area. 
+     */
+    self.drawScrollCorner = function(pen) {
+        pen.drawImage(HUDImages.sbtnNotPressImg, 0, 0);
+    }
     
     return self;
 }
