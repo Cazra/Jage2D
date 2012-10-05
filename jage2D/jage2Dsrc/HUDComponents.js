@@ -113,7 +113,7 @@ function JageHUDComponent(x,y,parent) {
         return true;
     }
     
-    /** Updates the mouse state of this button. */
+    /** Updates the mouse state of this component. */
     self.updateState = function(mouse) {
         self.justPressed = false;
         self.justLeftPressed = false;
@@ -208,6 +208,16 @@ function JageHUDContainer(x,y,parent) {
     self.drawComponents = function(pen) {
         for(var i in self.contents) {
             self.contents[i].render(pen);
+        }
+    }
+    
+    /** Updates the mouse state of this container and its components. */
+    self.superupdateState = self.updateState;
+    self.updateState = function(mouse) {
+        self.superupdateState(mouse);
+        
+        for(var i in self.contents) {
+            self.contents[i].updateState(mouse);
         }
     }
     
@@ -330,10 +340,27 @@ function JagePane(x, y, width, height, parent) {
     }
     
     
-    /** Finds the position of a point on the canvas in coordinates relative to the scrollable content of this pane. */
+    /** 
+     * Finds the position of a point on the canvas in coordinates relative to the scrollable content of this pane. 
+     * This really just takes into account the pane's position and the translation due to scrolling. 
+     * Custom transforms done inside the pane are not accounted for. So, if you have a camera transform or something,
+     * you'll need to create the apply its transform to the result to have an accurate geometry conversion.
+     */
     self.screen2ScrollCoords = function(pt) {
         pt = self.screen2CompCoords(pt);
         return self.scrollTransform.inv().apply(pt);
+    }
+    
+    
+    /** Updates the mouse state of this pane and its scrollbars if it has any. */
+    self.superupdateState = self.updateState;
+    self.updateState = function(mouse) {
+        self.superupdateState(mouse);
+        
+        if(self.vScrollbar)
+            self.vScrollbar.updateState(mouse);
+        if(self.hScrollbar)
+            self.hScrollbar.updateState(mouse);
     }
     
     return self;

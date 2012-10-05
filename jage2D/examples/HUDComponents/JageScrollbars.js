@@ -59,6 +59,7 @@ function TestApp(canvas,id) {
             pen.drawString("Use the scrollbars or mouse wheel to scroll the image in its pane. ",20,20);
             pen.drawString("Use the Page Up/Page Down to scroll the image a lot. ",20,40);
             pen.drawString("Hold Up or Down to scale the image.", 20, 60);
+            pen.drawString("That dot uses the mouse's world coordinates inside the scrollable JagePane.", 20,80);
 
             
         }
@@ -98,9 +99,8 @@ function TestPane(x,y,w,h,par) {
         if(!self.mouse)
             self.mouse = mouse;
             
-        // update the scrollbar's mouse state
-        self.vScrollbar.updateState(mouse)
-        self.hScrollbar.updateState(mouse)
+        // update the scrollbars' mouse state
+        self.updateState(mouse);
         
         // keyboard controls for scaling the image.
         if(keyboard.isPressed[Keys.Up])
