@@ -127,7 +127,7 @@ function TestPane(x,y,w,h,par) {
     }
     
     /** Draws the pane with its label, a red circle, and its contents. */
-    self.superdrawComponents = self.drawComponents;
+    var superdrawComponents = self.drawComponents;
     self.drawComponents = function(pen) {
         var origTrans = pen.getTransform();
         
@@ -141,7 +141,7 @@ function TestPane(x,y,w,h,par) {
         pen.drawImage(self.testImg,0,0);
         
         // draw the contents of this pane.
-        self.superdrawComponents(pen);
+        superdrawComponents(pen);
         
         // Draw a small circle at the mouse's world coordinates inside the scrollable area. 
         var mouseWorld = self.screen2ScrollCoords(self.mouse.position);

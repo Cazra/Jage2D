@@ -56,11 +56,11 @@ function TestApp(canvas,id) {
         self.pane2.isMouseOvered = false;
         self.pane3.isMouseOvered = false;
         
-        if(self.pane3.containsScreenPt(self.mouse.position))
+        if(self.pane3.isMouseOver(self.mouse))
             self.pane3.isMouseOvered = true;
-        else if(self.pane2.containsScreenPt(self.mouse.position))
+        else if(self.pane2.isMouseOver(self.mouse))
             self.pane2.isMouseOvered = true;
-        else if(self.pane1.containsScreenPt(self.mouse.position))
+        else if(self.pane1.isMouseOver(self.mouse))
             self.pane1.isMouseOvered = true;
         
         
@@ -155,7 +155,7 @@ function TestPane(x,y,w,h,par) {
     self.isMouseOvered = false;
     
     /** Draws the pane with its label, a red circle, and its contents. */
-    self.superdrawComponents = self.drawComponents;
+    var superdrawComponents = self.drawComponents;
     self.drawComponents = function(pen) {
         if(self.isMouseOvered)
             pen.clear("#AFA");
@@ -167,7 +167,7 @@ function TestPane(x,y,w,h,par) {
         pen.drawCircle(160,100,20);
         
         // draw the contents of this pane.
-        self.superdrawComponents(pen);
+        superdrawComponents(pen);
     }
 
     

@@ -212,9 +212,9 @@ function JageHUDContainer(x,y,parent) {
     }
     
     /** Updates the mouse state of this container and its components. */
-    self.superupdateState = self.updateState;
+    var superupdateState = self.updateState;
     self.updateState = function(mouse) {
-        self.superupdateState(mouse);
+        superupdateState(mouse);
         
         for(var i in self.contents) {
             self.contents[i].updateState(mouse);
@@ -353,9 +353,9 @@ function JagePane(x, y, width, height, parent) {
     
     
     /** Updates the mouse state of this pane and its scrollbars if it has any. */
-    self.superupdateState = self.updateState;
+    var superupdateState = self.updateState;
     self.updateState = function(mouse) {
-        self.superupdateState(mouse);
+        superupdateState(mouse);
         
         if(self.vScrollbar)
             self.vScrollbar.updateState(mouse);
@@ -478,9 +478,9 @@ function JageScrollbar(parent) {
     
     
     /** Updates the mouse state of this scrollbar and its components. */
-    self.superUpdateState = self.updateState;
+    var superUpdateState = self.updateState;
     self.updateState = function(mouse) {
-        self.superUpdateState(mouse);
+        superUpdateState(mouse);
         
         if(self.isDisabled)
             return;
@@ -636,9 +636,9 @@ function VScrollbarDefaultHandle(scrollbar) {
     }
     
     
-    self.superUpdateState = self.updateState;
+    var superUpdateState = self.updateState;
     self.updateState = function(mouse) {
-        self.superUpdateState(mouse);
+        superUpdateState(mouse);
         
         var mouseYRelative = self.parent.screen2CompCoords(mouse.position).y;
         
@@ -776,9 +776,9 @@ function JageHScrollbar(parent) {
     }
     
     
-    self.superUpdateState = self.updateState;
+    var superUpdateState = self.updateState;
     self.updateState = function(mouse) {
-        self.superUpdateState(mouse);
+        superUpdateState(mouse);
         
         var mouseXRelative = self.parent.screen2CompCoords(mouse.position).x;
         
